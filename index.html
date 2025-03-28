@@ -435,15 +435,12 @@ console.log("Fetched rewards:", rewards);
 
 
 function getRandomRewardBasedOnChances() {
-    // If no rewards are loaded, return null
     if (!rewards || rewards.length === 0) return null;
 
-    // If there is only one reward with 100% chance, return that reward
     if (rewards.length === 1 && rewards[0].chance === 100) {
         return rewards[0];
     }
 
-    // Calculate the total chance for all rewards
     const totalChance = rewards.reduce((sum, item) => sum + item.chance, 0);
     const rand = Math.floor(Math.random() * totalChance);
 
@@ -484,11 +481,10 @@ function activateBoxes() {
     openedBoxes = 0;
     winningRewards = [];
 
-    // Assign rewards to the boxes based on chances
     boxes.forEach((box, index) => {
         const rewardData = getRandomRewardBasedOnChances();
-        console.log(`Box ${index + 1} - Assigned Reward: ${rewardData ? rewardData.reward : "Empty"}`);  // Debugging log
-        box.dataset.reward = rewardData ? rewardData.reward : "Դատարկ";  // Assign the reward or empty text
+        console.log(`Box ${index + 1} - Assigned Reward: ${rewardData ? rewardData.reward : "Empty"}`);  
+        box.dataset.reward = rewardData ? rewardData.reward : "Դատարկ";  
     });
 }
 
@@ -497,13 +493,11 @@ boxes.forEach(box => {
         if (openedBoxes < diceNumber && this.classList.contains('active') && !this.classList.contains('opened')) {
             let reward = this.dataset.reward;
 
-            this.style.transition = 'transform 0.5s ease-in-out, opacity 0.5s';
-            this.style.transform = 'translateY(-50px)';
+            this.style.transition = 'opacity 0.5s'; 
             this.style.opacity = '0';
 
             setTimeout(() => {
                 this.textContent = reward;
-                this.style.transform = 'translateY(0)';
                 this.style.opacity = '1';
                 this.style.background = reward !== "Դատարկ" ? 'gold' : 'gray';
                 this.style.color = 'black';
@@ -546,7 +540,6 @@ function resetGame() {
         box.style.background = '';
         box.style.color = '';
         box.style.opacity = '1';
-        box.style.transform = 'translateY(0)';
     });
 
     rollBtn.disabled = false;
