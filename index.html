@@ -159,18 +159,21 @@
         }
 
         .dice {
-            border: 8px solid #8B5C05;
-            width: 145px;
-            height: 145px;
-            font-size: 80px;
-            background: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-radius: 90px;
-            color: black;
-            transition: transform 1s ease-in-out;
-        }
+    width: 145px;
+    height: 145px;
+    font-size: 80px;
+    background: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    color: black;
+    border: 8px solid #8B5C05;
+    text-align: center;
+    overflow: hidden; /* Prevents content from affecting size */
+    flex-shrink: 0; /* Prevents resizing */
+}
+
 
         .dice.rolling {
             animation: rollDice 1s infinite;
