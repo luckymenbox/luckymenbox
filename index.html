@@ -6,6 +6,11 @@
     <title>Responsive Layout</title>
     <style>
 
+@font-face {
+  font-family: Braind;
+  src: url(Braind\ Republic\ Regular.otf);
+}
+
 .boxstart { background: url('image1.png') no-repeat center/contain; }
 .box2 { background: url('image2.png') no-repeat center/contain; }
 .box3 { background: url('image3.png') no-repeat center/contain; }
@@ -23,8 +28,6 @@
 .box15 { background: url('image10.png') no-repeat center/contain; }
 .box16 { background: url('image1.png') no-repeat center/contain; }
 
-
-
 * {
             padding: 0;
             box-sizing: border-box;
@@ -36,7 +39,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            font-family: Arial, sans-serif;
+            font-family: Braind;
+            font-weight: 100;
             background: url('background.png') no-repeat center center fixed;
             background-size: cover;
         }
@@ -47,6 +51,7 @@
             padding: 29px 20px 0px 20px;
             font-size: 42px;
             color: white;
+            font-family: Braind;
         }
 
         .container {
@@ -117,9 +122,9 @@
         .rewardlistbox {
             width: auto;
             background: transparent;
-            border: 10px solid #8B5C05;
+            border: 7px solid #8B5C05;
             border-radius: 10px;
-            height: 660px;
+            height: 50%;
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -129,9 +134,14 @@
             /* margin-top: 20px; */
         }
 
+        #rewardList{list-style: none; font-size: 22px;font-weight: 100;}
         .rewardlistbox h1 {
             font-size: 28px;
+            margin: 0;
+            font-weight: 100;
         }
+
+        .rewardlistbox h3{margin: 5px; font-weight: 100;}
 
         .rewards-list ul {
             list-style: none;
@@ -191,6 +201,8 @@
         }
 
         button {
+            font-family: Braind;
+            font-weight: 100;
             font-size: 29px;
             padding: 27px 55px;
             background-color: green;
@@ -269,7 +281,9 @@
                 width: 200px; /* Adjust width of button */
             }
 
-            .header {font-size: 23px;}
+            .header {font-size: 42px;}
+
+            
         }
 
         @media (max-width: 768px) {
@@ -314,16 +328,26 @@
                 height: 115px;
             }
 
-            .header {font-size: 20px;}
+            .header {font-size: 35px;}
             /* .columns-container{width: 100px;} */
             .column {height: 403px;}
+
+            #rewardList li {float: left;margin-left: 2px;}
+            #rewardList {
+                list-style: none;
+                font-size: 22px;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                font-weight: 100;
+            }
         }
 
         
     </style>
 </head>
 <body>
-    <div class="header"><h><b>100 կոպեկանոց ցանկացած նվեր = 1պտույտի հնարավորություն</b></h></div>
+    <div class="header"><h>100&#128081կոպեկանոց ցանկացած նվեր = 1պտույտի հնարավորություն</h></div>
 
     <div class="container">
         <div class="game-container">
@@ -368,20 +392,13 @@
 
         <div class="rewardlistbox">
             <h1>Կարող ես շահել</h1>
-            <div class="rewards-list">
-                <ul>
-                    <li>+1 շանս</li>
-                    <li>20 դրամ</li>
-                    <li>40 դրամ</li>
-                    <li>100 դրամ</li>
-                    <li>1000 դրամ</li>
-                    <li>5000 դրամ</li>
-                    <li>20․000 դրամ</li>
-                    <li>50․000 դրամ</li>
-                    <li>SMART ժամացույց</li>
-                    <li>iPhone 15Pro Max</li>
-                </ul>
+            <h3>Մեր մրցանակները</h3>
+            <ul id="rewardList"></ul>
+            <div class="rewardsList">
+                
             </div>
+        </div>
+
         </div>
     </div>
     
@@ -507,7 +524,7 @@ boxes.forEach(box => {
                 this.style.display = 'flex';
                 this.style.alignItems = 'center';
                 this.style.justifyContent = 'center';
-                this.style.fontSize = '10px';
+                this.style.fontSize = '12px';
                 this.style.textAlign = 'center'
                 this.classList.add('opened');
             }, 500);
@@ -525,9 +542,12 @@ boxes.forEach(box => {
 });
 
 function showPopup() {
-    rewardText.innerHTML = winningRewards.length > 0 
-        ? winningRewards.map(result => `<li>${result}</li>`).join('')
-        : "<li>Ոչինչ չեք շահել</li>";
+    if (winningRewards.length > 0) {
+        rewardText.innerHTML = `<li>Շնորհավորում ենք՝ դուք շահել եք</li>` + 
+                               winningRewards.map(result => `<li>${result}</li>`).join('');
+    } else {
+        rewardText.innerHTML = "<li>Ոչինչ չեք շահել</li>";
+    }
 
     popup.style.display = 'block';
 }
@@ -549,9 +569,22 @@ function resetGame() {
 }
 
 rollBtn.addEventListener('click', rollDice);
-
-
-
     </script>
+
+<script>
+    function loadRewards() {
+        let savedRewards = JSON.parse(localStorage.getItem('rewards')) || [ "1+ շանս", "20 AMD", "40 AMD", "100 AMD", "1000 AMD", "5000 AMD", "20,000 AMD", "50,000 AMD", "SMART Watch", "iPhone 15Pro Max", ""];
+        let rewardsList = document.getElementById('rewardsList');
+        rewardList.innerHTML = '';
+        savedRewards.forEach(reward => {
+            let li = document.createElement('li');
+            li.textContent = reward;
+            rewardList.appendChild(li);
+        });
+    }
+
+    loadRewards();
+</script>
+
 </body>
 </html>
