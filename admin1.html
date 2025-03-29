@@ -4,115 +4,187 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel</title>
+<style>
+    .column1 {
+       display: none;
+    }
+</style>
 </head>
 <body>
-    <h1>Admin Panel - Set Rewards</h1>
+    <div class="container">
+        <h1>Admin Panel - Set Rewards</h1>
+        
+        <!-- Reward Form -->
+        <form id="rewardForm">
+            <label for="reward">Reward Name:</label>
+            <input type="text" id="reward" required><br><br>
+            <label for="chance">Chance (%) :</label>
+            <input type="number" id="chance" min="0" max="100" required><br><br>
+            <button type="submit">Save Reward</button>
+        </form>
+        
+        <!-- Rewards List -->
+        <div class="container">
+            <h2>Admin Panel - Manage Rewards</h2>
+            <ul id="rewardList"></ul>
+        </div>
     
-    <!-- Reward Form -->
-    <form id="rewardForm">
-        <label for="reward">Reward Name:</label>
-        <input type="text" id="reward" required><br><br>
-        <label for="chance">Chance (%) :</label>
-        <input type="number" id="chance" min="0" max="100" required><br><br>
-        <button type="submit">Save Reward</button>
-    </form>
-
-    <h2>Current Rewards</h2>
-    <ul id="rewardList"></ul>
-
+        <div class="columns">
+            <!-- Left Column: Winning Amounts & Chances -->
+            <div class="column1">
+                <h3>Մրցանակների գումարներն ու հավանականությունները</h3>
+                <div id="winningsList"></div>
+            </div>
     
+            <!-- Right Column: Rewards Text -->
+            <div class="column">
+                <h3>Մրցանակների Անունները</h3>
+                <div id="rewardsList"></div>
+            </div>
+        </div>
+    
+        <!-- Buttons -->
+        <div class="buttons">
+            <button onclick="saveSettings()">Պահպանել</button>
+            <button class="reset" onclick="resetSettings()">Սկզբնական տարբերակ</button>
+        </div>
+    </div>
     
     <script>
-        // Function to load rewards from localStorage
-        function loadRewards() {
-            let rewards = JSON.parse(localStorage.getItem('rewardsData')) || [];
-            const rewardList = document.getElementById('rewardList');
-            rewardList.innerHTML = ''; // Clear the list before displaying
-
-            rewards.forEach((reward, index) => {
-                const li = document.createElement('li');
-                li.textContent = `${reward.reward} - Chance: ${reward.chance}% `;
-                
-                // Create the delete button for each reward
-                const deleteButton = document.createElement('button');
-                deleteButton.textContent = 'Delete';
-                deleteButton.style.marginLeft = '10px';
-                deleteButton.addEventListener('click', () => deleteReward(index));
-
-                // Create the edit button for each reward
-                const editButton = document.createElement('button');
-                editButton.textContent = 'Edit';
-                editButton.style.marginLeft = '10px';
-                editButton.addEventListener('click', () => editReward(index));
-
-                // Append buttons
-                li.appendChild(editButton);
-                li.appendChild(deleteButton);
-                rewardList.appendChild(li);
-            });
+    // Default values
+    let defaultWinnings = ["1+ շանս,", "20 AMD,", "40 AMD,", "100 AMD,", "1000 AMD,", "5000 AMD,", "20,000 AMD,", "50,000 AMD,", "SMART Watch,", "iPhone 15Pro Max", "","", "", ""];
+    let defaultChances = Array(defaultWinnings.length).fill(0);
+    let defaultRewards = [...defaultWinnings]; // Use winnings as rewards initially
+    
+    // Load from storage or use defaults
+    let winnings = JSON.parse(localStorage.getItem('winnings')) || [...defaultWinnings];
+    let chances = JSON.parse(localStorage.getItem('chances')) || [...defaultChances];
+    let rewards = JSON.parse(localStorage.getItem('rewards')) || [...defaultRewards];
+    
+    // Reward Data
+    let rewardsData = JSON.parse(localStorage.getItem('rewardsData')) || [];
+    
+    function renderWinnings() {
+        let winningsList = document.getElementById('winningsList');
+        winningsList.innerHTML = '';
+        winnings.forEach((amount, index) => {
+            winningsList.innerHTML += `
+                <div class="entry">
+                    <span>Winning:</span> <input type="text" value="${amount}" id="win-${index}">
+                    <span>Chance:</span> <input type="number" value="${chances[index]}" id="chance-${index}">
+                </div>
+            `;
+        });
+    }
+    
+    function renderRewards() {
+        let rewardsList = document.getElementById('rewardsList');
+        rewardsList.innerHTML = '';
+        rewards.forEach((reward, index) => {
+            rewardsList.innerHTML += `
+                <div class="entry">
+                    <span>Reward ${index + 1}:</span> <input type="text" value="${reward}" id="reward-${index}">
+                </div>
+            `;
+        });
+    }
+    
+    // Load rewards from localStorage and display them
+    function loadRewards() {
+        const rewardList = document.getElementById('rewardList');
+        rewardList.innerHTML = ''; // Clear the list before displaying
+    
+        rewardsData.forEach((reward, index) => {
+            const li = document.createElement('li');
+            li.textContent = `${reward.reward} - Chance: ${reward.chance}%`;
+    
+            // Create the delete button for each reward
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.style.marginLeft = '10px';
+            deleteButton.addEventListener('click', () => deleteReward(index));
+    
+            // Create the edit button for each reward
+            const editButton = document.createElement('button');
+            editButton.textContent = 'Edit';
+            editButton.style.marginLeft = '10px';
+            editButton.addEventListener('click', () => editReward(index));
+    
+            // Append buttons
+            li.appendChild(editButton);
+            li.appendChild(deleteButton);
+            rewardList.appendChild(li);
+        });
+    }
+    
+    // Save a new reward
+    document.getElementById('rewardForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        const rewardName = document.getElementById('reward').value;
+        const chance = parseInt(document.getElementById('chance').value);
+    
+        if (rewardName && chance >= 0 && chance <= 100) {
+            rewardsData.push({ reward: rewardName, chance: chance });
+            localStorage.setItem('rewardsData', JSON.stringify(rewardsData));
+    
+            document.getElementById('reward').value = '';
+            document.getElementById('chance').value = '';
+            loadRewards();
+        } else {
+            alert('Please provide valid reward and chance values.');
         }
-
-        // Delete reward from localStorage
-        function deleteReward(index) {
-            let rewards = JSON.parse(localStorage.getItem('rewardsData')) || [];
-            rewards.splice(index, 1); // Remove the reward at the given index
-            localStorage.setItem('rewardsData', JSON.stringify(rewards));
-            loadRewards(); // Reload the rewards list
-        }
-
-        // Edit reward in the form
-        function editReward(index) {
-            let rewards = JSON.parse(localStorage.getItem('rewardsData')) || [];
-            const reward = rewards[index];
-            document.getElementById('reward').value = reward.reward;
-            document.getElementById('chance').value = reward.chance;
-
-            // Change the form submission to update the reward
-            const form = document.getElementById('rewardForm');
-            form.removeEventListener('submit', addReward); // Remove the current event listener
-            form.addEventListener('submit', function() { updateReward(index); }); // Add the update event listener
-        }
-
-        // Add new reward to localStorage
-        function addReward(event) {
-            event.preventDefault();
-
-            const rewardName = document.getElementById('reward').value;
-            const chance = parseInt(document.getElementById('chance').value);
-
-            if (rewardName && !isNaN(chance)) {
-                let rewards = JSON.parse(localStorage.getItem('rewardsData')) || [];
-                rewards.push({ reward: rewardName, chance: chance });
-                localStorage.setItem('rewardsData', JSON.stringify(rewards));
-
-                document.getElementById('rewardForm').reset();
-                loadRewards(); // Reload the list with the new reward
-            }
-        }
-
-        // Update an existing reward
-        function updateReward(index) {
-            const rewardName = document.getElementById('reward').value;
-            const chance = parseInt(document.getElementById('chance').value);
-
-            if (rewardName && !isNaN(chance)) {
-                let rewards = JSON.parse(localStorage.getItem('rewardsData')) || [];
-                rewards[index] = { reward: rewardName, chance: chance }; // Update the reward
-                localStorage.setItem('rewardsData', JSON.stringify(rewards));
-
-                document.getElementById('rewardForm').reset();
-                loadRewards(); // Reload the list with the updated reward
-
-                const form = document.getElementById('rewardForm');
-                form.removeEventListener('submit', updateReward); // Remove the current update event listener
-                form.addEventListener('submit', addReward); // Add the original add event listener back
-            }
-        }
-
-        // Load the rewards when the page loads
-        document.getElementById('rewardForm').addEventListener('submit', addReward);
-        loadRewards();
+    });
+    
+    // Delete reward from localStorage
+    function deleteReward(index) {
+        rewardsData.splice(index, 1); // Remove the reward at the given index
+        localStorage.setItem('rewardsData', JSON.stringify(rewardsData));
+        loadRewards(); // Reload the rewards list
+    }
+    
+    // Edit reward in the form
+    function editReward(index) {
+        const reward = rewardsData[index];
+    
+        document.getElementById('reward').value = reward.reward;
+        document.getElementById('chance').value = reward.chance;
+    
+        // Remove the reward from the list for re-edit
+        rewardsData.splice(index, 1);
+        localStorage.setItem('rewardsData', JSON.stringify(rewardsData));
+        loadRewards(); // Reload the rewards list
+    }
+    
+    // Save settings for winnings
+    function saveSettings() {
+        winnings = winnings.map((_, index) => document.getElementById(`win-${index}`).value.trim());
+        chances = chances.map((_, index) => parseInt(document.getElementById(`chance-${index}`).value));
+        rewards = rewards.map((_, index) => document.getElementById(`reward-${index}`).value.trim());
+    
+        localStorage.setItem('winnings', JSON.stringify(winnings));
+        localStorage.setItem('chances', JSON.stringify(chances));
+        localStorage.setItem('rewards', JSON.stringify(rewards));
+    
+        alert('Settings saved! Refresh game to see changes.');
+    }
+    
+    // Reset settings to default
+    function resetSettings() {
+        localStorage.setItem('winnings', JSON.stringify(defaultWinnings));
+        localStorage.setItem('chances', JSON.stringify(defaultChances));
+        localStorage.setItem('rewards', JSON.stringify(defaultRewards));
+        alert('Settings reset to default!');
+        location.reload();
+    }
+    
+    // Initial render
+    renderWinnings();
+    renderRewards();
+    loadRewards();
     </script>
     
+    
+
 </body>
 </html>
