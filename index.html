@@ -305,7 +305,7 @@
             }
 
             .game-container {
-                width: 100%;
+                width: 90%;
                 margin-top: 0;
             }
 
@@ -347,16 +347,40 @@
 
             .header {font-size: 16px;}
             /* .columns-container{width: 100px;} */
-            .column {height: 403px;}
+            .column {height: 336px;}
+
+
+            .rewardlistbox{
+                width: auto;
+    background: transparent;
+    border: 7px solid #8B5C05;
+    border-radius: 10px;
+    height: 50%;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    color: white;
+
+            }
 
             #rewardList li {float: left;margin-left: 2px;}
+
+            .rewardlistbox h1{font-size: 24px;}
+            .rewardlistbox h3{font-size: 13px;}
             #rewardList {
+                margin: 0;
                 list-style: none;
-                font-size: 22px;
+                font-size: 18px;
                 display: flex;
                 flex-wrap: wrap;
                 justify-content: center;
                 font-weight: 100;
+            }
+
+            .tall-box{
+                height: 148px;
             }
             
         }
@@ -401,8 +425,7 @@
             <div class="game-container">
                 <div class="grid" id="grid"></div>
                 <div class="dice-container">
-                    <h1 id="text1">ԸՆՏՐԻ՝Ր </br> ՏՈՒՓԸ</h1>
-                    <div class="dice" id="dice">🎲</div>
+                    
                     <button id="rollDice">ՊՏՏԵԼ</button>
                 </div>
             </div>
@@ -422,7 +445,6 @@
     
     <script>
 const boxes = document.querySelectorAll('.small-box, .large-box, .medium-box, .tall-box');
-const dice = document.getElementById('dice');
 const rollBtn = document.getElementById('rollDice');
 
 const popup = document.createElement('div');
@@ -460,23 +482,17 @@ closeButton.addEventListener('click', resetGame);
 popup.appendChild(closeButton);
 document.body.appendChild(popup);
 
-let diceNumber = 0;
 let openedBoxes = 0;
 let winningRewards = [];
+let maxOpen = 2;
 
-// Fetch rewards from localStorage (admin panel data)
-let rewards = JSON.parse(localStorage.getItem('rewardsData')) || []; // Default to empty array if no data is found
+let rewards = JSON.parse(localStorage.getItem('rewardsData')) || [];
 
-// Debugging: Check what data is being fetched
 console.log("Fetched rewards:", rewards);
-
 
 function getRandomRewardBasedOnChances() {
     if (!rewards || rewards.length === 0) return null;
-
-    if (rewards.length === 1 && rewards[0].chance === 100) {
-        return rewards[0];
-    }
+    if (rewards.length === 1 && rewards[0].chance === 100) return rewards[0];
 
     const totalChance = rewards.reduce((sum, item) => sum + item.chance, 0);
     const rand = Math.floor(Math.random() * totalChance);
@@ -484,53 +500,39 @@ function getRandomRewardBasedOnChances() {
     let accumulatedChance = 0;
     for (let reward of rewards) {
         accumulatedChance += reward.chance;
-        if (rand < accumulatedChance) {
-            return reward;
-        }
+        if (rand < accumulatedChance) return reward;
     }
     return null;
 }
 
-document.getElementById("rollDice").addEventListener("click", function () {
-    let dice = document.getElementById("dice");
-    dice.classList.add("rolling");
-
-    setTimeout(() => {
-        dice.classList.remove("rolling");
-        let randomNumber = Math.floor(Math.random() * 6) + 1;
-        dice.textContent = randomNumber;
-    }, 1000);
-});
-
-function rollDice() {
-    dice.classList.add('rolling');
-    rollBtn.disabled = true;
-    setTimeout(() => {
-        dice.classList.remove('rolling');
-        diceNumber = Math.floor(Math.random() * 6) + 1;
-        dice.textContent = diceNumber;
-        activateBoxes();
-    }, 1000);
-}
-
 function activateBoxes() {
-    boxes.forEach(box => box.classList.add('active'));
+    boxes.forEach(box => {
+        box.classList.add('active');
+        box.classList.remove('opened');
+        box.textContent = '';
+        box.style.background = '';
+        box.style.color = '';
+        box.style.opacity = '1';
+    });
+
     openedBoxes = 0;
     winningRewards = [];
 
     boxes.forEach((box, index) => {
         const rewardData = getRandomRewardBasedOnChances();
-        console.log(`Box ${index + 1} - Assigned Reward: ${rewardData ? rewardData.reward : "Empty"}`);  
-        box.dataset.reward = rewardData ? rewardData.reward : "Դատարկ";  
+        console.log(`Box ${index + 1} - Assigned Reward: ${rewardData ? rewardData.reward : "Դատարկ"}`);
+        box.dataset.reward = rewardData ? rewardData.reward : "Դատարկ";
     });
+
+    rollBtn.disabled = true;
 }
 
 boxes.forEach(box => {
     box.addEventListener('click', function () {
-        if (openedBoxes < diceNumber && this.classList.contains('active') && !this.classList.contains('opened')) {
+        if (openedBoxes < maxOpen && this.classList.contains('active') && !this.classList.contains('opened')) {
             let reward = this.dataset.reward;
 
-            this.style.transition = 'opacity 0.5s'; 
+            this.style.transition = 'opacity 0.5s';
             this.style.opacity = '0';
 
             setTimeout(() => {
@@ -543,7 +545,7 @@ boxes.forEach(box => {
                 this.style.alignItems = 'center';
                 this.style.justifyContent = 'center';
                 this.style.fontSize = '12px';
-                this.style.textAlign = 'center'
+                this.style.textAlign = 'center';
                 this.classList.add('opened');
             }, 500);
 
@@ -552,7 +554,7 @@ boxes.forEach(box => {
             }
 
             openedBoxes++;
-            if (openedBoxes === diceNumber) {
+            if (openedBoxes === maxOpen) {
                 setTimeout(showPopup, 800);
             }
         }
@@ -561,8 +563,8 @@ boxes.forEach(box => {
 
 function showPopup() {
     if (winningRewards.length > 0) {
-        rewardText.innerHTML = `<li>Շնորհավորում ենք՝ դուք շահել եք</li>` + 
-                               winningRewards.map(result => `<li>${result}</li>`).join('');
+        rewardText.innerHTML = `<li>Շնորհավորում ենք՝ դուք շահել եք</li>` +
+            winningRewards.map(result => `<li>${result}</li>`).join('');
     } else {
         rewardText.innerHTML = "<li>Ոչինչ չեք շահել</li>";
     }
@@ -572,7 +574,6 @@ function showPopup() {
 
 function resetGame() {
     popup.style.display = 'none';
-    dice.textContent = "🎲";
     winningRewards = [];
 
     boxes.forEach(box => {
@@ -586,7 +587,8 @@ function resetGame() {
     rollBtn.disabled = false;
 }
 
-rollBtn.addEventListener('click', rollDice);
+// Button starts the game
+rollBtn.addEventListener('click', activateBoxes);
     </script>
 
 <script>
